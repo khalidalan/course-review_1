@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مراجعة دورة Linux Admin — تعديلات مطلوبة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0e12;
+    --surface: #10161c;
+    --surface-2: #151d24;
+    --line: #212b34;
+    --text: #e7ecf1;
+    --muted: #7c8a97;
+
+    --eng: #4fa3d9;
+    --eng-dim: rgba(79,163,217,0.12);
+    --eng-line: rgba(79,163,217,0.35);
+
+    --mon: #b98add;
+    --mon-dim: rgba(185,138,221,0.12);
+    --mon-line: rgba(185,138,221,0.35);
+
+    --warn: #e0a94f;
+    --warn-dim: rgba(224,169,79,0.12);
+
+    --radius: 12px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Tajawal', sans-serif;
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  header{
+    border-bottom:1px solid var(--line);
+    padding:34px 20px 30px;
+  }
+  .term{max-width:900px; margin:0 auto;}
+  .term-bar{display:flex; align-items:center; gap:7px; margin-bottom:16px;}
+  .term-bar span{width:10px;height:10px;border-radius:50%; background:var(--line);}
+  .prompt{
+    font-size:13.5px; color:var(--muted); margin-bottom:14px;
+    direction:ltr; text-align:left;
+  }
+  .prompt .user{color:var(--eng);}
+  .prompt .path{color:var(--mon);}
+  h1{
+    font-size:clamp(22px, 4vw, 30px);
+    font-weight:700; margin:0 0 10px;
+    font-family:'Tajawal', sans-serif;
+  }
+  header p.desc{color:var(--muted); font-size:15px; margin:0; max-width:640px;}
+
+  .tabs{
+    max-width:900px; margin:26px auto 0; padding:0 20px;
+    display:flex; gap:10px;
+  }
+  .tab{
+    flex:1; text-align:center; padding:14px 12px;
+    border-radius:10px; border:1px solid var(--line);
+    background:var(--surface); cursor:pointer;
+    font-family:'IBM Plex Mono', monospace; font-size:13.5px; font-weight:600;
+    color:var(--muted); transition:all .15s ease; user-select:none;
+  }
+  .tab .count{display:block; font-size:20px; margin-top:4px; font-weight:700;}
+  .tab[data-owner="eng"].active{border-color:var(--eng-line); background:var(--eng-dim); color:var(--eng);}
+  .tab[data-owner="mon"].active{border-color:var(--mon-line); background:var(--mon-dim); color:var(--mon);}
+  .tab:hover{color:var(--text);}
+
+  main{max-width:900px; margin:0 auto; padding:30px 20px 80px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .section-title{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    letter-spacing:.5px; color:var(--muted); text-transform:uppercase;
+    margin:34px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .section-title:first-child{margin-top:0;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius); padding:18px 20px; margin-bottom:12px;
+  }
+  .card.eng{border-right:3px solid var(--eng);}
+  .card.mon{border-right:3px solid var(--mon);}
+  .card.blocked{border-right:3px solid var(--warn);}
+
+  .card-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin-bottom:8px; flex-wrap:wrap;
+  }
+  .lesson-name{font-weight:700; font-size:16px;}
+  .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:11px;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+  }
+  .tag.wrong-video{background:rgba(217,100,79,0.15); color:#e08a72;}
+  .tag.slow{background:rgba(224,169,79,0.15); color:var(--warn);}
+  .tag.missing{background:rgba(150,150,150,0.15); color:#a8b0b8;}
+  .tag.naming{background:var(--mon-dim); color:var(--mon);}
+  .tag.blocked{background:var(--warn-dim); color:var(--warn);}
+
+  .card p{margin:0 0 12px; color:#c7d0d8; font-size:14.5px;}
+  .card p:last-of-type{margin-bottom:12px;}
+
+  .warn-note{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--warn-dim); border:1px solid rgba(224,169,79,0.3);
+    border-radius:8px; padding:11px 13px; margin-bottom:14px;
+    font-size:13.5px; color:#f0d9ae;
+  }
+  .warn-note svg{width:17px; height:17px; flex-shrink:0; margin-top:2px; color:var(--warn);}
+
+  .links{display:flex; flex-wrap:wrap; gap:8px;}
+  .link-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--surface-2); border:1px solid var(--line);
+    text-decoration:none; padding:8px 13px; border-radius:8px;
+    font-size:13px; color:var(--text); transition:border-color .15s ease;
+  }
+  .link-btn svg{width:14px; height:14px; flex-shrink:0;}
+  .link-btn.source{color:var(--muted);}
+  .link-btn.source svg{color:var(--muted);}
+  .link-btn.fix{color:var(--eng);}
+  .link-btn.fix svg{color:var(--eng);}
+  .card.mon .link-btn.fix{color:var(--mon);}
+  .card.mon .link-btn.fix svg{color:var(--mon);}
+  .link-btn:hover{border-color:currentColor;}
+
+  footer{
+    text-align:center; color:var(--muted); font-size:13px;
+    padding:20px; border-top:1px solid var(--line);
+  }
+
+  @media (max-width:560px){
+    .tabs{flex-direction:column;}
+    .card-head{flex-direction:column; align-items:flex-start;}
+  }
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+  .tab:focus-visible, .link-btn:focus-visible{outline:2px solid var(--eng); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="term">
+    <div class="term-bar"><span></span><span></span><span></span></div>
+    <div class="prompt mono"><span class="user">khalid@review</span>:<span class="path">~/linux-admin</span>$ cat course-audit.log</div>
+    <h1>مراجعة دورة Your First Steps in GNU/Linux</h1>
+    <p class="desc">قايمة بكل الملاحظات اللي طلعت أثناء مراجعة الدورة، مقسّمة حسب مين المسؤول عن حلها: تعديلات رفع على المنصة، أو تعديلات مونتاج.</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-owner="eng" onclick="showPanel('eng')">
+    مهندس يوسف — رفع المنصة
+    <span class="count" id="count-eng">0</span>
+  </div>
+  <div class="tab" data-owner="mon" onclick="showPanel('mon')">
+    المونتاج — تعديل الفيديو
+    <span class="count" id="count-mon">0</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- ============ ENGINEER YOUSEF PANEL ============ -->
+  <div class="panel active" id="panel-eng">
+
+    <div class="section-title">your-first-steps-in-gnu-linux</div>
+
+    <div class="card blocked">
+      <div class="card-head">
+        <span class="lesson-name">fix-resolution-issue</span>
+        <span class="tag blocked">معلّق — في انتظار المونتاج</span>
+      </div>
+      <div class="warn-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        متترفعش الفيديو ده لحد ما المونتاج يصلّح اسم الـ intro أولاً (المفروض يبقى "Fix Resolution Issue" بدل اسم الدرس اللي قبله).
+      </div>
+      <p>الفيديو المرفوع حاليًا هو نفسه فيديو الدرس اللي قبله، ولازم يترفع الفيديو الصح مكانه بعد ما يخلص المونتاج تعديله.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/your-first-steps-in-gnu-linux/topics/fix-resolution-issue" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+      </div>
+    </div>
+
+    <div class="card eng">
+      <div class="card-head">
+        <span class="lesson-name">desktop-discovery</span>
+        <span class="tag wrong-video">فيديو غلط</span>
+      </div>
+      <p>المرفوع هنا هو فيديو "fix-resolution-issue" بالغلط بدل فيديو "desktop-discovery". الفيديو الصح جاهز ومرفق تحت.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/your-first-steps-in-gnu-linux/topics/gnome-desktop-discovery" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/12Hzo2YDBWhKB_aQVSK5UOgBS3nw0TXzw/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          الفيديو الصح اللي هيترفع
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ MONTAGE PANEL ============ -->
+  <div class="panel" id="panel-mon">
+
+    <div class="section-title">your-first-steps-in-gnu-linux</div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">historical-background</span>
+        <span class="tag missing">صورة intro غير موجودة</span>
+      </div>
+      <p>صورة الـ intro اللي المفروض تظهر فيها اسم الدرس مش موجودة في الفيديو. مش متأكد لو ده مقصود، محتاج مراجعة.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/your-first-steps-in-gnu-linux/topics/historical-background" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1nMrHqZ8H_cdhRIKAuQ7AZHqA-nGp5rNh/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">fix-resolution-issue</span>
+        <span class="tag naming">اسم intro غلط</span>
+      </div>
+      <p>الـ intro بتاع الفيديو حاطط اسم الدرس اللي قبله. لازم يتصحح ويبقى "Fix Resolution Issue". الفيديو ده هو نفسه اللي هيرفعه مهندس يوسف بعد ما يخلص التعديل.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/your-first-steps-in-gnu-linux/topics/fix-resolution-issue" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1a4YQiNVa7VBTpE5hycAlcUeXzNUMR_iv/view?usp=sharing" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر (يحتاج تعديل الـ intro)
+        </a>
+      </div>
+    </div>
+
+    <div class="section-title">package-management</div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Debian Package Management (APT)</span>
+        <span class="tag slow">بطء في الفيديو</span>
+      </div>
+      <p>فيه بطء وتقطيع في الفيديو، محتاج معالجة من المونتاج.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/package-management/topics/debian-package-management-apt" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1CUI7K8YR3z2xRSPvN5c7SaerYspcogPj/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">RPM &amp; YUM Package Management</span>
+        <span class="tag slow">بطء في الفيديو</span>
+      </div>
+      <p>نفس مشكلة البطء موجودة في الفيديو ده كمان.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/package-management/topics/rpm-%26-yum-package-management" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1c-bFvoKL-HS6y00v3HXmNkoa96mc4tgv/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="section-title">GNU, Linux &amp; Unix Commands</div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Working with Directories — Part 1</span>
+        <span class="tag naming">اسم intro مش موضح</span>
+      </div>
+      <p>الدرس مقسوم لجزئين، والـ intro في الاتنين مكتوب فيه "Working with Directories" بس من غير ما يوضح رقم الجزء. مش هيأثر كتير، بس ملاحظة لو مش مقصود.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/gnu-linux-%26-unix-commands/topics/working-with-directories-part-1" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1MmwSYmGgF6W41UXrnp9PNptWdPDQhQm5/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Working with Directories — Part 2</span>
+        <span class="tag naming">اسم intro مش موضح</span>
+      </div>
+      <p>نفس ملاحظة الجزء الأول: الـ intro مكتوب فيه "Working with Directories" من غير رقم الجزء.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/gnu-linux-%26-unix-commands/topics/working-with-directories-part-2" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1W1zzj4t508SL6Ws1fV-v7oIaTAOGlTLn/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">How to Find Files</span>
+        <span class="tag slow">بطء في الفيديو</span>
+      </div>
+      <p>نفس مشكلة البطء.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/gnu-linux-%26-unix-commands/topics/how-to-find-files" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/19YBN5lUyOIjkC1RssJfpW7rgdk3rZXol/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Archiving Files</span>
+        <span class="tag slow">بطء في الفيديو</span>
+      </div>
+      <p>نفس مشكلة البطء.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/gnu-linux-%26-unix-commands/topics/archiving-files" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1s57pdLS3MaxlJdDmQAUUlOozE3b8bT-W/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="section-title">Process Management &amp; Multiplexers</div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Create, Monitor &amp; Kill Processes</span>
+        <span class="tag slow">بطء في الفيديو</span>
+      </div>
+      <p>نفس مشكلة البطء.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/process-management-%26-multiplexers/topics/create-monitor-%26-kill-processes" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/13lyzsw6qv1aC2FpHkpyd_Gp0PWZL7956/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">screen</span>
+        <span class="tag slow">بطء في الفيديو</span>
+      </div>
+      <p>نفس مشكلة البطء.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/process-management-%26-multiplexers/topics/screen" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1Tw6qmwJ-7ESYXHnN8xWlKu35KPmqsOYH/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="section-title">Permissions &amp; Ownerships</div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Special Permissions — Part 1</span>
+        <span class="tag naming">اسم intro مش موضح</span>
+      </div>
+      <p>الدرس مقسوم لجزئين، والـ intro في الاتنين مكتوب فيه "Special Permissions" بس من غير رقم الجزء. مش هيأثر كتير، بس ملاحظة لو مش مقصود.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/permissions-%26-ownerships/topics/special-permissions-part-1" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1hGK4A_fMRzfCJwZBLl8ctOPOR1ZwiJX7/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+    <div class="card mon">
+      <div class="card-head">
+        <span class="lesson-name">Special Permissions — Part 2</span>
+        <span class="tag naming">اسم intro مش موضح</span>
+      </div>
+      <p>نفس ملاحظة الجزء الأول: الـ intro مكتوب فيه "Special Permissions" من غير رقم الجزء.</p>
+      <div class="links">
+        <a class="link-btn source" href="https://almdrasa.com/tracks/devops/courses/linux-admin/lessons/permissions-%26-ownerships/topics/special-permissions-part-2" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          الدرس على المنصة
+        </a>
+        <a class="link-btn fix" href="https://drive.google.com/file/d/1yjJWrFz12vI6HvDSbZdaQbihiHF7_zNg/view?usp=drive_link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          فيديو المصدر
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>مراجعة دورة Linux Admin — Your First Steps in GNU/Linux</footer>
+
+<script>
+function showPanel(owner){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.owner===owner));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+owner));
+}
+document.getElementById('count-eng').textContent = document.querySelectorAll('#panel-eng .card').length;
+document.getElementById('count-mon').textContent = document.querySelectorAll('#panel-mon .card').length;
+</script>
+
+</body>
+</html>
